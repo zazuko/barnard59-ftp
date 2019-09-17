@@ -8,6 +8,15 @@ const { resolve } = require('path')
 const { Readable } = require('readable-stream')
 
 describe('move', () => {
+  let server = null
+
+  afterEach(async () => {
+    if (server) {
+      await server.stop()
+      server = null
+    }
+  })
+
   it('is a function', () => {
     expect(typeof move).toBe('function')
   })
@@ -21,7 +30,7 @@ describe('move', () => {
     await fs.mkdir(root, { recursive: true })
     await fs.copyFile(original, source)
 
-    const server = new FtpServer()
+    server = new FtpServer()
     await server.start()
     const input = new Readable({ read: () => input.push(null) })
 
@@ -30,7 +39,6 @@ describe('move', () => {
     await getStream(stream)
     const content = await fs.readFile(target)
 
-    await server.stop()
     await fs.rmdir(root)
 
     expect(content.toString()).toBe('987\n654')
@@ -45,7 +53,7 @@ describe('move', () => {
     await fs.mkdir(root, { recursive: true })
     await fs.copyFile(original, source)
 
-    const server = new FtpServer({ user: 'test', password: '1234' })
+    server = new FtpServer({ user: 'test', password: '1234' })
     await server.start()
     const input = new Readable({ read: () => input.push(null) })
 
@@ -54,7 +62,6 @@ describe('move', () => {
     await getStream(stream)
     const content = await fs.readFile(target)
 
-    await server.stop()
     await fs.rmdir(root)
 
     expect(content.toString()).toBe('987\n654')
